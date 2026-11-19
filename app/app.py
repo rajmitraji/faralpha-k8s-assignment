@@ -98,3 +98,4 @@ def get_data():
 if __name__ == "__main__":
     # for local development only - in production we use gunicorn
     app.run(host="0.0.0.0", port=5000, debug=True)
+

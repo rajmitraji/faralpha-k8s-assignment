@@ -16,3 +16,4 @@ EXPOSE 5000
 # use gunicorn for production instead of the flask dev server
 # 4 workers is a reasonable default for handling concurrent requests
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "app:app"]
+
