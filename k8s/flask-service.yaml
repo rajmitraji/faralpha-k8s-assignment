@@ -3,8 +3,6 @@ kind: Service
 metadata:
   name: flask-service
 spec:
-  # NodePort exposes the service on a static port on each node
-  # combined with minikube, this lets us access flask from our host machine
   type: NodePort
   selector:
     app: flask-app
@@ -12,4 +10,3 @@ spec:
     - port: 5000
       targetPort: 5000
       nodePort: 30007
-

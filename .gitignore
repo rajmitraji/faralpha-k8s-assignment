@@ -1,27 +1,12 @@
-# python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
 venv/
 .env
-
-# IDE stuff
 .vscode/
 .idea/
 *.swp
-*.swo
-
-# OS files
 .DS_Store
 Thumbs.db
-desktop.ini
-
-# distribution / packaging
 dist/
 build/
 *.egg-info/
-
-# byte-compiled
-*.pyc
-

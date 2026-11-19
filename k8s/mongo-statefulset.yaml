@@ -19,7 +19,6 @@ spec:
           ports:
             - containerPort: 27017
           env:
-            # MongoDB reads these on first startup to create the root user
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -44,4 +43,3 @@ spec:
         - name: mongo-storage
           persistentVolumeClaim:
             claimName: mongo-pvc
-
