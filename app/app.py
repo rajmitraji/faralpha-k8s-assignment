@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_db():
-    # pulling mongo connection details from env vars so we dont hardcode anything
     mongo_host = os.environ.get("MONGO_HOST", "localhost")
     mongo_port = os.environ.get("MONGO_PORT", "27017")
     mongo_user = os.environ.get("MONGO_USERNAME", "")
@@ -45,12 +44,8 @@ def insert_data():
 
     try:
         db = get_db()
-        result = db.collection.insert_one(data)
-        logger.info(f"Inserted document with id: {result.inserted_id}")
-        return jsonify({
-            "message": "Data inserted successfully",
-            "id": str(result.inserted_id)
-        }), 201
+        db.data.insert_one(data)
+        return jsonify({"status": "Data inserted"}), 201
     except (ConnectionFailure, ServerSelectionTimeoutError) as e:
         logger.error(f"MongoDB connection error: {e}")
         return jsonify({"error": "Database connection failed. Please try again later."}), 503
@@ -63,8 +58,7 @@ def insert_data():
 def get_data():
     try:
         db = get_db()
-        # _id is not json serializable + its an internal mongo thing, so excluding it
-        documents = list(db.collection.find({}, {"_id": 0}))
+        documents = list(db.data.find({}, {"_id": 0}))
         return jsonify(documents), 200
     except (ConnectionFailure, ServerSelectionTimeoutError) as e:
         logger.error(f"MongoDB connection error: {e}")
