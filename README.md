@@ -221,8 +221,8 @@ Because the Flask Deployment and MongoDB Service reside in the same namespace (`
 In `k8s/flask-deployment.yaml`:
 ```yaml
 env:
-  - name: MONGO_HOST
-    value: "mongo-service"
+- name: MONGO_HOST
+  value: "mongo-service"
 ```
 
 Resolution and communication flow:
@@ -270,12 +270,12 @@ spec:
   minReplicas: 2
   maxReplicas: 5
   metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
 ```
 
 Scaling formula:
@@ -312,7 +312,7 @@ kubectl get all,pvc,hpa
 ```
 Result: Shows 2 Flask pods and 1 MongoDB StatefulSet pod in `Running` state, `mongo-pvc` in `Bound` state, both services configured, and HPA active.
 
-Screenshot: `screenshots/01-pods-services.png`
+![Cluster Status](screenshots/01-pods-services.png)
 
 ### 2. API Functional and CRUD Testing
 Commands:
@@ -330,7 +330,7 @@ Result:
 - GET `/data` returns persisted documents excluding `_id`.
 - Non-JSON and empty payloads return HTTP 400 error responses.
 
-Screenshot: `screenshots/02-api-crud-test.png`
+![API CRUD Test](screenshots/02-api-crud-test.png)
 
 ### 3. High-Traffic Simulation and Autoscaling Test
 High load was simulated using a BusyBox container executing an infinite HTTP GET loop against the internal cluster service:
@@ -349,7 +349,7 @@ Result:
 - HPA triggered scaling from 2 -> 3 -> 4 -> 5 replicas.
 - `kubectl top pods -l app=flask-app` confirmed compute distribution across all 5 running pods.
 
-Screenshot: `screenshots/03-hpa-autoscaling.png`
+![HPA Autoscaling](screenshots/03-hpa-autoscaling.png)
 
 ### 4. Database Persistence Across Pod Crash
 To verify persistent volume attachment:
@@ -372,7 +372,7 @@ Result:
 - New pod re-attached to the existing `mongo-pvc`.
 - Querying `/data` immediately returned previously stored documents without data loss.
 
-Screenshot: `screenshots/04-db-persistence.png`
+![Database Persistence](screenshots/04-db-persistence.png)
 
 ## Cleanup
 
