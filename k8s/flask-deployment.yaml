@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app
+          image: flask-app:latest
+          # Never pull from registry - use the locally built image inside minikube
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            # MongoDB connection config - using kubernetes service DNS
+            # "mongo-service" resolves to the ClusterIP of our mongo service
+            - name: MONGO_HOST
+              value: "mongo-service"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_DB
+              value: "flaskdb"
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-password
+          # readiness probe - k8s uses this to know when the pod is ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # liveness probe - k8s uses this to restart the pod if it becomes unresponsive
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "250Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
