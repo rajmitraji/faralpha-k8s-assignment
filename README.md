@@ -17,7 +17,7 @@ faralpha-k8s-assignment/
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── k8s/
-│   ├── mongo-secret.yaml
+│   ├── mongo-secret.example.yaml
 │   ├── mongo-pv-pvc.yaml
 │   ├── mongo-service.yaml
 │   ├── mongo-statefulset.yaml
@@ -140,10 +140,19 @@ minikube addons enable metrics-server
 
 ### 2. Deploy MongoDB Stack
 
-Deploy in order so dependencies (secrets, storage) are available before pod initialization:
+Deploy in order so dependencies (secrets, storage) are available before pod initialization.
+
+Following security best practices, `k8s/mongo-secret.yaml` is excluded from Git tracking via `.gitignore`. You can create your local secret from the provided template or generate it directly with `kubectl`:
 
 ```bash
+# Option A: Copy the template and apply (recommended)
+cp k8s/mongo-secret.example.yaml k8s/mongo-secret.yaml
+# Edit k8s/mongo-secret.yaml with your credentials if needed, then apply:
 kubectl apply -f k8s/mongo-secret.yaml
+
+# Option B: Create the secret directly via kubectl CLI
+# kubectl create secret generic mongo-secret --from-literal=mongo-username=admin --from-literal=mongo-password=faralpha2024
+
 kubectl apply -f k8s/mongo-pv-pvc.yaml
 kubectl apply -f k8s/mongo-service.yaml
 kubectl apply -f k8s/mongo-statefulset.yaml
@@ -169,17 +178,19 @@ minikube service flask-service --url
 
 ## Kubernetes Architecture and Resource Breakdown
 
-### 1. MongoDB Credentials (`k8s/mongo-secret.yaml`)
-Stores root credentials encoded in base64:
-- `mongo-username`: `admin` (`YWRtaW4=`)
-- `mongo-password`: `faralpha2024` (`ZmFyYWxwaGEyMDI0`)
+### 1. MongoDB Credentials (`k8s/mongo-secret.example.yaml` / `k8s/mongo-secret.yaml`)
+Stores root credentials using Kubernetes `stringData` (automatically encoded by the API server):
+- `mongo-username`: `admin`
+- `mongo-password`: `faralpha2024`
+
+The actual secret file `k8s/mongo-secret.yaml` is listed in `.gitignore` to prevent credential exposure in public repositories. `k8s/mongo-secret.example.yaml` serves as the version-controlled template.
 
 Both MongoDB StatefulSet and Flask Deployment reference this Secret using `valueFrom.secretKeyRef`.
 
 ### 2. Storage (`k8s/mongo-pv-pvc.yaml`)
-- PersistentVolume (`mongo-pv`): 1Gi capacity, `ReadWriteOnce` access mode, `Retain` reclaim policy, `hostPath` at `/data/mongo`.
-- PersistentVolumeClaim (`mongo-pvc`): Requests 1Gi and binds to `mongo-pv`.
-Mounted to MongoDB container at `/data/db`. Data remains intact across pod crashes, deletions, or rescheduling.
+- PersistentVolume (`mongo-pv`): 1Gi capacity, `ReadWriteOnce` access mode, `Retain` reclaim policy, `storageClassName: manual`, `hostPath` at `/data/mongo`.
+- PersistentVolumeClaim (`mongo-pvc`): Requests 1Gi, specifies `storageClassName: manual`, and binds deterministically to `mongo-pv`.
+Mounted to MongoDB container at `/data/db`. Explicitly configuring `storageClassName: manual` on both PV and PVC prevents default storage class admission issues on Minikube and guarantees clean 1-to-1 binding. Data remains intact across pod crashes, deletions, or rescheduling.
 
 ### 3. MongoDB StatefulSet (`k8s/mongo-statefulset.yaml`)
 - Replicas: 1

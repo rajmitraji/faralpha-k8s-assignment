@@ -8,6 +8,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
   hostPath:
     path: /data/mongo
 ---
@@ -18,6 +19,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: manual
   resources:
     requests:
       storage: 1Gi

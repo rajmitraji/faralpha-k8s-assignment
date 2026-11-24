@@ -10,3 +10,6 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Kubernetes secrets containing real passwords
+k8s/mongo-secret.yaml
